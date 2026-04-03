@@ -12,26 +12,32 @@ A standalone Model Context Protocol (MCP) server that integrates with the Telegr
 - A Telegram Bot Token (from [@BotFather](https://t.me/botfather))
 - Your Telegram Chat ID (you can get this by messaging your bot and checking the `/getUpdates` API endpoint)
 
-## Setup
+## Setup & Installation
 
-1. Clone this repository.
-2. Set your environment variables:
+We provide an interactive script to automatically configure the MCP server with the Gemini CLI.
+
+1. Clone this repository:
    ```bash
-   export TELEGRAM_BOT_TOKEN="your_bot_token_here"
-   export TELEGRAM_CHAT_ID="your_chat_id_here"
+   git clone https://github.com/JJRPF/telegram-bot-mcp.git
+   cd telegram-bot-mcp
    ```
-3. Run the server (or configure your MCP client to run it):
+2. Run the interactive setup:
    ```bash
-   uv run --with mcp --with requests python server.py
+   ./setup.sh
    ```
+   *The script will prompt you for your Telegram Bot Token and Chat ID, and will automatically configure your Gemini CLI.*
 
-## Using with Gemini CLI
+## The Telegram Interface (Agent Watcher)
 
-To permanently add this server to your Gemini CLI configuration:
+To replicate the experience of a dedicated, always-on AI agent accessible via Telegram (similar to Telegram-native AI bots), you can run the provided **Watcher** script in the background.
 
+The Watcher connects to your Telegram bot and listens for incoming messages. When you send a message to the bot (e.g. `/resume` or `Deploy the new feature`), it automatically triggers a new Gemini CLI session in the background, passes your instructions to the AI, and the AI will execute the request and reply back directly to your phone via the MCP server.
+
+**Run the watcher:**
 ```bash
-gemini mcp add --scope user \
-  -e TELEGRAM_BOT_TOKEN="your_bot_token_here" \
-  -e TELEGRAM_CHAT_ID="your_chat_id_here" \
-  telegram-bot uv run --with mcp --with requests python /path/to/telegram-mcp/server.py
+# Make sure your TELEGRAM_BOT_TOKEN environment variable is exported or present in a .env file
+export TELEGRAM_BOT_TOKEN="your_bot_token_here"
+uv run --with requests python watcher.py
 ```
+
+Now you can close your terminal session, open Telegram, and chat with your local AI agent from anywhere!
