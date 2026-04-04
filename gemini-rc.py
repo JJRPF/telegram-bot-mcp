@@ -47,7 +47,7 @@ def listen_for_remote(child):
                     
                     # Inject into the active Gemini session
                     prompt = f"The user just sent you a message on Telegram: '{data}'. Please process their request. IMPORTANT: You MUST reply to them using the send_telegram_message MCP tool so they can read your response on their phone!"
-                    child.sendline(prompt)
+                    child.send(prompt + '\r')
                     
         except Exception as e:
             pass
@@ -75,7 +75,8 @@ def main():
         dimensions = (24, 80)
 
     # Spawn gemini CLI
-    child = pexpect.spawn('gemini', encoding='utf-8', dimensions=dimensions)
+    args = sys.argv[1:]
+    child = pexpect.spawn('gemini', args=args, encoding='utf-8', dimensions=dimensions)
     
     # Handle terminal resize
     def sigwinch_passthrough(sig, data):
