@@ -59,6 +59,23 @@ def run_gemini_command(command_list):
     except Exception as e:
         return str(e)
 
+import socket
+
+SOCKET_FILE = "/tmp/gemini_telegram.sock"
+
+def forward_to_active_session(text):
+    if os.path.exists(SOCKET_FILE):
+        try:
+            client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+            client.connect(SOCKET_FILE)
+            client.sendall(text.encode('utf-8'))
+            client.close()
+            return True
+        except Exception as e:
+            print(f"[Watcher] Socket error: {e}")
+            pass
+    return False
+
 def handle_command(text, chat_id):
     global current_session, current_model
     parts = text.strip().split()
@@ -74,7 +91,7 @@ def handle_command(text, chat_id):
             "/model <name> - Set a specific model (e.g. gemini-2.5-pro)\n"
             "/status - Show current session and model\n"
             "/help - Show this message\n\n"
-            "Any other text will be sent directly to the agent in the active session!"
+            "Any other text will be sent directly to the agent!"
         )
         send_telegram(msg)
         
@@ -86,7 +103,6 @@ def handle_command(text, chat_id):
     elif cmd == "/sessions":
         send_telegram("⏳ Fetching sessions...")
         output = run_gemini_command(["gemini", "--list-sessions"])
-        # Filter out annoying node/keytar warnings
         clean_output = "\n".join([line for line in output.split("\n") if "Keychain" not in line and "keytar" not in line and "fallback" not in line])
         send_telegram(f"📄 *Available Sessions:*\n{clean_output.strip()}")
         
@@ -113,26 +129,25 @@ def handle_command(text, chat_id):
         send_telegram(f"📊 *Status*\nSession: `{sess}`\nModel: `{mod}`")
         
     else:
-        # Treat as a regular message to the AI
-        print(f"[Watcher] Forwarding to Gemini CLI...")
+        print(f"[Watcher] Processing message: {text}")
         
-        # We need to construct the CLI arguments
+        if forward_to_active_session(text):
+            print("[Watcher] Injected message into active gemini-rc.py terminal session.")
+            return
+
+        print("[Watcher] No active gemini-rc.py session found. Running headlessly...")
+        
         prompt = f"The user just sent you a message on Telegram: '{text}'. Please process their request. IMPORTANT: You MUST reply to them using the send_telegram_message MCP tool so they can read your response on their phone!"
-        
         args = ["gemini", "--prompt", prompt]
         
         if current_session:
             args.extend(["--resume", current_session])
-            
         if current_model:
             args.extend(["-m", current_model])
             
-        # Send a quick acknowledgment so the user knows it's processing
-        send_telegram("⏳ Processing your request...")
-        
+        send_telegram("⏳ Processing your request headlessly...")
         subprocess.run(args)
         
-        # If we just started a new session, lock back onto 'latest' so follow-ups continue it
         if current_session is None:
             current_session = "latest"
             save_session_state()
