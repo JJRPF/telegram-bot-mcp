@@ -76,6 +76,29 @@ def main():
 
     # Spawn gemini CLI
     args = sys.argv[1:]
+    
+    # Prepend system note to inform the agent it is in Remote Control mode
+    system_note = (
+        "SYSTEM NOTE: You are currently running in 'Gemini Remote Control' mode. "
+        "The user is connected to this terminal session via Telegram. "
+        "You MUST use the `send_telegram_message` tool to reply to the user if they message you from Telegram "
+        "or if you finish a task while they are away. "
+        "Any message starting with '[📱 Telegram]' indicates a remote message."
+    )
+    
+    # We use -i (interactive prompt) to inject this instruction at the start of the session
+    # We check if -i or -p is already present. If so, we prepend our note to it.
+    prompt_found = False
+    for i, arg in enumerate(args):
+        if arg in ["-i", "--prompt-interactive", "-p", "--prompt"]:
+            if i + 1 < len(args):
+                args[i+1] = f"{system_note}\n\n{args[i+1]}"
+                prompt_found = True
+                break
+    
+    if not prompt_found:
+        args.extend(["-i", system_note])
+
     child = pexpect.spawn('gemini', args=args, encoding='utf-8', dimensions=dimensions)
     
     # Handle terminal resize
