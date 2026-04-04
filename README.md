@@ -27,17 +27,27 @@ We provide an interactive script to automatically configure the MCP server with 
    ```
    *The script will prompt you for your Telegram Bot Token and Chat ID, and will automatically configure your Gemini CLI.*
 
-## The Telegram Interface (Agent Watcher)
+## The Telegram Interface (Background Watcher)
 
-To replicate the experience of a dedicated, always-on AI agent accessible via Telegram (similar to Telegram-native AI bots), you can run the provided **Watcher** script in the background.
+To run a headless agent that wakes up when you text it, you can run the provided **Watcher** script in the background.
 
-The Watcher connects to your Telegram bot and listens for incoming messages. When you send a message to the bot (e.g. `/resume` or `Deploy the new feature`), it automatically triggers a new Gemini CLI session in the background, passes your instructions to the AI, and the AI will execute the request and reply back directly to your phone via the MCP server.
+When you send a message to the bot (e.g. `Deploy the new feature`), it automatically triggers a new headless Gemini CLI session in the background, passes your instructions to the AI, and the AI will execute the request and reply back directly to your phone via the MCP server.
 
 **Run the watcher:**
 ```bash
-# Make sure your TELEGRAM_BOT_TOKEN environment variable is exported or present in a .env file
-export TELEGRAM_BOT_TOKEN="your_bot_token_here"
 uv run --with requests python watcher.py
 ```
 
-Now you can close your terminal session, open Telegram, and chat with your local AI agent from anywhere!
+## Interactive Remote Control (gemini-rc.py)
+
+If you want the exact experience of **Claude Code Remote Control**, where you start a session in your terminal that you can control *both* locally and remotely via Telegram at the same time:
+
+1. Open your terminal and start the remote control wrapper:
+   ```bash
+   uv run --with requests --with pexpect python gemini-rc.py
+   ```
+2. You will see the normal Gemini CLI prompt locally. You can type commands directly into your keyboard as usual.
+3. If you step away from your computer, simply message your Telegram bot. The script will intercept your text, type it directly into the running terminal session, and tell Gemini to reply to your phone!
+4. When you return to your computer, you will see all the work Gemini did right there on your screen, in the exact same session!
+
+To stop the session, either type `exit` in the terminal, or text `/stop` on Telegram.
