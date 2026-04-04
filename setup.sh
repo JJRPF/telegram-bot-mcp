@@ -18,6 +18,26 @@ if [ -z "$CHAT_ID" ]; then
 fi
 
 echo ""
+echo "Installing the 'gemini-rc' global command..."
+
+RC_BIN_DIR="$HOME/.local/bin"
+mkdir -p "$RC_BIN_DIR"
+RC_SCRIPT_PATH="$RC_BIN_DIR/gemini-rc"
+
+cat << EOF > "$RC_SCRIPT_PATH"
+#!/usr/bin/env bash
+export TELEGRAM_BOT_TOKEN="$BOT_TOKEN"
+export TELEGRAM_CHAT_ID="$CHAT_ID"
+uv run --with requests --with pexpect python "$(pwd)/gemini-rc.py" "\$@"
+EOF
+
+chmod +x "$RC_SCRIPT_PATH"
+
+if [[ ":\$PATH:" != *":$RC_BIN_DIR:"* ]]; then
+    echo "Note: Please add $RC_BIN_DIR to your PATH to use the 'gemini-rc' command from anywhere."
+fi
+
+echo ""
 echo "Adding Telegram MCP Server to your Gemini CLI configuration..."
 
 gemini mcp add --scope user \

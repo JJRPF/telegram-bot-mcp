@@ -38,14 +38,18 @@ When you send a message to the bot (e.g. `Deploy the new feature`), it automatic
 uv run --with requests python watcher.py
 ```
 
-## Interactive Remote Control (gemini-rc.py)
+## Interactive Remote Control (gemini-rc)
 
 If you want the exact experience of **Claude Code Remote Control**, where you start a session in your terminal that you can control *both* locally and remotely via Telegram at the same time:
 
-1. Open your terminal and start the remote control wrapper:
+When you run `./setup.sh`, a global wrapper command called `gemini-rc` is automatically installed into your `~/.local/bin` folder. 
+
+1. From any directory on your computer, simply start a session using:
    ```bash
-   uv run --with requests --with pexpect python gemini-rc.py
+   gemini-rc
    ```
+   *(Note: The command accepts all the exact same flags as the normal `gemini` CLI. For example, you can run `gemini-rc --resume latest` to resume an existing session or `gemini-rc -p "Build a feature"` to start with a prompt).*
+
 2. You will see the normal Gemini CLI prompt locally. You can type commands directly into your keyboard as usual.
 3. If you step away from your computer, simply message your Telegram bot. The script will intercept your text, type it directly into the running terminal session, and tell Gemini to reply to your phone!
 4. When you return to your computer, you will see all the work Gemini did right there on your screen, in the exact same session!
